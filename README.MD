@@ -53,7 +53,7 @@ npm -v
 ### Clonar repositorio
 
 ```bash
-git clone URL_DEL_REPOSITORIO
+git clone https://github.com/gostwar12-byte/inscripcion-cursos.git
 ```
 
 ### Entrar al proyecto
