@@ -1,8 +1,11 @@
+const jwt = require('jsonwebtoken');
 const express = require('express');
 const bcrypt = require('bcrypt');
 const router = express.Router();
 
 const { Usuario } = require('../models');
+
+// en esta parte se registra el user
 
 router.post('/register', async (req, res) => {
     try {
@@ -39,6 +42,65 @@ router.post('/register', async (req, res) => {
                 nombre: nuevoUsuario.nombre,
                 correo: nuevoUsuario.correo
             }
+        });
+
+    } catch (error) {
+        console.error(error);
+
+        res.status(500).json({
+            mensaje: 'Error interno del servidor'
+        });
+    }
+});
+
+// en esta parte se logea
+
+
+router.post('/login', async (req, res) => {
+    try {
+        const { correo, password } = req.body;
+
+        if (!correo || !password) {
+            return res.status(400).json({
+                mensaje: 'Correo y contraseña son obligatorios'
+            });
+        }
+
+        const usuario = await Usuario.findOne({
+            where: { correo }
+        });
+
+        if (!usuario) {
+            return res.status(401).json({
+                mensaje: 'Credenciales incorrectas'
+            });
+        }
+
+        const passwordValida = await bcrypt.compare(
+            password,
+            usuario.password
+        );
+
+        if (!passwordValida) {
+            return res.status(401).json({
+                mensaje: 'Credenciales incorrectas'
+            });
+        }
+
+        const token = jwt.sign(
+            {
+                id: usuario.id,
+                correo: usuario.correo
+            },
+            process.env.JWT_SECRET,
+            {
+                expiresIn: '1h'
+            }
+        );
+
+        res.json({
+            mensaje: 'Login exitoso',
+            token
         });
 
     } catch (error) {
