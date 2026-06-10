@@ -15,7 +15,52 @@
         Cerrar Sesión
     </button>
 
-    <div id="cursosContainer"></div>
+    <hr>
+
+    <h2>Crear Curso</h2>
+
+    <form id="cursoForm">
+
+        <input
+            type="text"
+            id="nombre"
+            placeholder="Nombre del curso"
+            required
+        >
+
+        <input
+            type="text"
+            id="descripcion"
+            placeholder="Descripción"
+            required
+        >
+
+        <input
+            type="number"
+            id="cupos"
+            placeholder="Cantidad de cupos"
+            required
+        >
+
+        <input
+            type="date"
+            id="fechaInicio"
+            required
+        >
+
+        <button type="submit" id="crearCurso">
+            Crear Curso
+        </button>
+
+    </form>
+
+    <hr>
+
+    <h2>Cursos Registrados</h2>
+
+    <div id="cursosContainer">
+        <!-- Aquí se mostrarán los cursos -->
+    </div>
 
     <script src="js/cursos.js"></script>
 
