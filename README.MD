@@ -193,11 +193,10 @@ inscripcion-cursos/
 
 ## Estado del Proyecto
 
-Proyecto en etapa inicial de desarrollo.
+Proyecto en etapa inicial de desarrollo.  https://github.com/gostwar12-byte/inscripcion-cursos
 
 Actualmente se encuentra configurada la estructura base del repositorio, la gestión de variables de entorno y la preparación para la integración con base de datos mediante Sequelize.
 
 
 
 
-hola esta es una prueba
