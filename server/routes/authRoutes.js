@@ -7,14 +7,15 @@ const { Usuario } = require('../models');
 
 // en esta parte se registra el user
 
-router.post('/register', async (req, res) => {
+router.post('/register', async (req, res, next) => {
     try {
         const { nombre, correo, password } = req.body;
 
         if (!nombre || !correo || !password) {
-            return res.status(400).json({
-                mensaje: 'Todos los campos son obligatorios'
-            });
+            const err = new Error('Todos los campos son obligatorios');
+            err.statusCode = 400;
+            err.code = 'VALIDATION_ERROR';
+            return next(err);
         }
 
         const usuarioExistente = await Usuario.findOne({
@@ -22,9 +23,10 @@ router.post('/register', async (req, res) => {
         });
 
         if (usuarioExistente) {
-            return res.status(409).json({
-                mensaje: 'El correo ya está registrado'
-            });
+            const err = new Error('El correo ya está registrado');
+            err.statusCode = 409;
+            err.code = 'DUPLICATE_EMAIL';
+            return next(err);
         }
 
         const passwordHash = await bcrypt.hash(password, 10);
@@ -36,34 +38,35 @@ router.post('/register', async (req, res) => {
         });
 
         res.status(201).json({
-            mensaje: 'Usuario registrado correctamente',
-            usuario: {
-                id: nuevoUsuario.id,
-                nombre: nuevoUsuario.nombre,
-                correo: nuevoUsuario.correo
+            success: true,
+            code: 'REGISTER_SUCCESS',
+            message: 'Usuario registrado correctamente',
+            data: {
+                usuario: {
+                    id: nuevoUsuario.id,
+                    nombre: nuevoUsuario.nombre,
+                    correo: nuevoUsuario.correo
+                }
             }
         });
 
     } catch (error) {
-        console.error(error);
-
-        res.status(500).json({
-            mensaje: 'Error interno del servidor'
-        });
+        next(error);
     }
 });
 
 // en esta parte se logea
 
 
-router.post('/login', async (req, res) => {
+router.post('/login', async (req, res, next) => {
     try {
         const { correo, password } = req.body;
 
         if (!correo || !password) {
-            return res.status(400).json({
-                mensaje: 'Correo y contraseña son obligatorios'
-            });
+            const err = new Error('Correo y contraseña son obligatorios');
+            err.statusCode = 400;
+            err.code = 'VALIDATION_ERROR';
+            return next(err);
         }
 
         const usuario = await Usuario.findOne({
@@ -71,9 +74,10 @@ router.post('/login', async (req, res) => {
         });
 
         if (!usuario) {
-            return res.status(401).json({
-                mensaje: 'Credenciales incorrectas'
-            });
+            const err = new Error('Credenciales incorrectas');
+            err.statusCode = 401;
+            err.code = 'INVALID_CREDENTIALS';
+            return next(err);
         }
 
         const passwordValida = await bcrypt.compare(
@@ -82,9 +86,10 @@ router.post('/login', async (req, res) => {
         );
 
         if (!passwordValida) {
-            return res.status(401).json({
-                mensaje: 'Credenciales incorrectas'
-            });
+            const err = new Error('Credenciales incorrectas');
+            err.statusCode = 401;
+            err.code = 'INVALID_CREDENTIALS';
+            return next(err);
         }
 
         const token = jwt.sign(
@@ -99,16 +104,16 @@ router.post('/login', async (req, res) => {
         );
 
         res.json({
-            mensaje: 'Login exitoso',
-            token
+            success: true,
+            code: 'LOGIN_SUCCESS',
+            message: 'Login exitoso',
+            data: {
+                token
+            }
         });
 
     } catch (error) {
-        console.error(error);
-
-        res.status(500).json({
-            mensaje: 'Error interno del servidor'
-        });
+        next(error);
     }
 });
 

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Inscripciones - Sistema de Inscripción</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">
+                <h1>Sistema de Inscripción</h1>
+            </div>
+            <nav class="navbar-nav">
+                <a href="dashboard.html" class="nav-link">Dashboard</a>
+                <a href="cursos.html" class="nav-link">Gestionar Cursos</a>
+                <a href="mis-inscripciones.html" class="nav-link active">Mis Inscripciones</a>
+                <button id="logoutBtn" class="btn btn-secondary">
+                    Cerrar Sesión
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <div id="notificacionContainer" class="notificacion-container"></div>
+
+    <main class="container">
+        <section class="cursos-section">
+            <h2>Mis Inscripciones</h2>
+            <div id="misInscripcionesContainer" class="cursos-grid">
+                <!-- Aquí se mostrarán mis inscripciones -->
+            </div>
+        </section>
+    </main>
+
+    <script src="js/misInscripciones.js"></script>
+</body>
+</html>

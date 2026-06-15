@@ -36,20 +36,27 @@ async function cargarCursos() {
 
     try {
 
-        const response = await fetch(
-            'http://localhost:3000/api/cursos',
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            }
-        );
+        // traer cursos
+        const response = await fetch('http://localhost:3000/api/cursos', {
+            headers: { Authorization: `Bearer ${token}` }
+        });
 
         const cursos = await response.json();
+
+        // traer inscripciones del usuario para marcar cursos inscritos
+        const insResp = await fetch('http://localhost:3000/api/inscripciones/mis-inscripciones', {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+
+        const misInscripciones = insResp.ok ? await insResp.json() : [];
+        const mapInscripciones = new Map();
+        misInscripciones.forEach(i => mapInscripciones.set(i.cursoId, i.id));
 
         cursosContainer.innerHTML = '';
 
         cursos.forEach(curso => {
+
+            const inscritoId = mapInscripciones.get(curso.id);
 
             cursosContainer.innerHTML += `
                 <div class="curso-card">
@@ -68,6 +75,11 @@ async function cargarCursos() {
                         <button class="btn btn-small btn-danger" onclick="eliminarCurso(${curso.id})">
                             🗑️ Eliminar
                         </button>
+                        ${inscritoId ? `
+                            <button class="btn btn-small btn-outline" onclick="cancelarInscripcion(${inscritoId})">Cancelar inscripción</button>
+                        ` : `
+                            <button class="btn btn-small btn-success" onclick="inscribirse(${curso.id})">Inscribirse</button>
+                        `}
                     </div>
                 </div>
             `;
@@ -226,5 +238,54 @@ cancelarEdicionBtn.addEventListener('click', cancelarEdicion);
 
 window.eliminarCurso = eliminarCurso;
 window.editarCurso = editarCurso;
+
+async function inscribirse(cursoId) {
+    try {
+        const response = await fetch('http://localhost:3000/api/inscripciones', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify({ cursoId })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            mostrarNotificacion(data.mensaje, 'success');
+            cargarCursos();
+        } else {
+            mostrarNotificacion(data.mensaje || 'Error al inscribirse', 'error');
+        }
+    } catch (error) {
+        console.error(error);
+        mostrarNotificacion('Error al inscribirse', 'error');
+    }
+}
+
+async function cancelarInscripcion(inscripcionId) {
+    try {
+        const response = await fetch(`http://localhost:3000/api/inscripciones/${inscripcionId}`, {
+            method: 'DELETE',
+            headers: { Authorization: `Bearer ${token}` }
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            mostrarNotificacion(data.mensaje, 'success');
+            cargarCursos();
+        } else {
+            mostrarNotificacion(data.mensaje || 'Error al cancelar inscripción', 'error');
+        }
+    } catch (error) {
+        console.error(error);
+        mostrarNotificacion('Error al cancelar inscripción', 'error');
+    }
+}
+
+window.inscribirse = inscribirse;
+window.cancelarInscripcion = cancelarInscripcion;
 
 cargarCursos();

@@ -4,7 +4,7 @@ const inscripcionRoutes = require('../routes/inscripcionRoutes');
 const dashboardRoutes = require('../routes/dashboardRoutes');
 const express = require('express');
 const cors = require('cors');
-
+const errorHandler = require('../middleware/errorHandler');
 
 const authRoutes = require('../routes/authRoutes');
 
@@ -23,6 +23,18 @@ app.use('/api/auth', authRoutes);
 app.use('/api/cursos', cursoRoutes);
 app.use('/api/inscripciones', inscripcionRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+
+// 404 - Ruta no encontrada
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    code: 'NOT_FOUND',
+    message: 'Recurso no encontrado'
+  });
+});
+
+// Middleware de manejo de errores (debe ir al final)
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 3000;
 

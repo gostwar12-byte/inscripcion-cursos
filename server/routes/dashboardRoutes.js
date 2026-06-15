@@ -5,7 +5,7 @@ const { Usuario, Curso, Inscripcion } = require('../models');
 const authenticate = require('../middleware/authMiddleware');
 
 // Obtener estadísticas generales
-router.get('/estadisticas', authenticate, async (req, res) => {
+router.get('/estadisticas', authenticate, async (req, res, next) => {
     try {
         const totalUsuarios = await Usuario.count();
         const totalCursos = await Curso.count();
@@ -30,40 +30,45 @@ router.get('/estadisticas', authenticate, async (req, res) => {
         });
 
         res.json({
-            totalUsuarios,
-            totalCursos,
-            totalInscripciones,
-            misInscripciones,
-            cursosPopulares
+            success: true,
+            code: 'STATISTICS_SUCCESS',
+            message: 'Estadísticas obtenidas correctamente',
+            data: {
+                totalUsuarios,
+                totalCursos,
+                totalInscripciones,
+                misInscripciones,
+                cursosPopulares
+            }
         });
 
     } catch (error) {
-        console.error(error);
-        res.status(500).json({
-            mensaje: 'Error al obtener estadísticas'
-        });
+        next(error);
     }
 });
 
 // Obtener información del usuario autenticado
-router.get('/usuario', authenticate, async (req, res) => {
+router.get('/usuario', authenticate, async (req, res, next) => {
     try {
         const usuario = await Usuario.findByPk(req.usuario.id, {
             attributes: { exclude: ['password'] }
         });
 
         if (!usuario) {
-            return res.status(404).json({
-                mensaje: 'Usuario no encontrado'
-            });
+            const err = new Error('Usuario no encontrado');
+            err.statusCode = 404;
+            err.code = 'USER_NOT_FOUND';
+            return next(err);
         }
 
-        res.json(usuario);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({
-            mensaje: 'Error al obtener información del usuario'
+        res.json({
+            success: true,
+            code: 'USER_FOUND',
+            message: 'Usuario obtenido correctamente',
+            data: { usuario }
         });
+    } catch (error) {
+        next(error);
     }
 });
 
