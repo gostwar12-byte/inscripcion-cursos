@@ -1,5 +1,7 @@
 require('dotenv').config();
 const cursoRoutes = require('../routes/cursoRoutes');
+const inscripcionRoutes = require('../routes/inscripcionRoutes');
+const dashboardRoutes = require('../routes/dashboardRoutes');
 const express = require('express');
 const cors = require('cors');
 
@@ -19,6 +21,8 @@ app.get('/', (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/cursos', cursoRoutes);
+app.use('/api/inscripciones', inscripcionRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 const PORT = process.env.PORT || 3000;
 
