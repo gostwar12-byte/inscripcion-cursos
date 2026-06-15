@@ -26,21 +26,24 @@ loginForm.addEventListener('submit', async (e) => {
         const data = await response.json();
 
         if (!response.ok) {
+            mensaje.className = 'message-box error';
             mensaje.textContent = data.mensaje;
             return;
         }
 
         localStorage.setItem('token', data.token);
 
-        mensaje.textContent = 'Login exitoso';
+        mensaje.className = 'message-box success';
+        mensaje.textContent = '✓ ' + data.mensaje;
 
         setTimeout(() => {
-            window.location.href = 'cursos.html';
-        }, 1000);
+            window.location.href = 'dashboard.html';
+        }, 1500);
 
     } catch (error) {
         console.error(error);
 
-        mensaje.textContent = 'Error al conectar con el servidor';
+        mensaje.className = 'message-box error';
+        mensaje.textContent = '✗ Error al conectar con el servidor';
     }
 });

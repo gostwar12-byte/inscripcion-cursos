@@ -3,66 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cursos</title>
-
+    <title>Cursos - Sistema de Inscripción</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
+    <header class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">
+                <h1>Sistema de Inscripción</h1>
+            </div>
+            <nav class="navbar-nav">
+                <a href="dashboard.html" class="nav-link">Dashboard</a>
+                <a href="cursos.html" class="nav-link active">Gestionar Cursos</a>
+                <button id="logoutBtn" class="btn btn-secondary">
+                    Cerrar Sesión
+                </button>
+            </nav>
+        </div>
+    </header>
 
-    <h1>Listado de Cursos</h1>
+    <div id="notificacionContainer" class="notificacion-container"></div>
 
-    <button id="logoutBtn">
-        Cerrar Sesión
-    </button>
+    <main class="container">
+        <section class="form-section">
+            <h2>Crear o Editar Curso</h2>
+            <form id="cursoForm" class="curso-form">
+                <input type="hidden" id="cursoId">
 
-    <hr>
+                <div class="form-group">
+                    <label for="nombre">Nombre del Curso</label>
+                    <input
+                        type="text"
+                        id="nombre"
+                        placeholder="Ingresa el nombre del curso"
+                        required
+                    >
+                </div>
 
-    <h2>Crear Curso</h2>
+                <div class="form-group">
+                    <label for="descripcion">Descripción</label>
+                    <textarea
+                        id="descripcion"
+                        placeholder="Describe el contenido del curso"
+                        rows="4"
+                        required
+                    ></textarea>
+                </div>
 
-    <form id="cursoForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="cupos">Cantidad de Cupos</label>
+                        <input
+                            type="number"
+                            id="cupos"
+                            placeholder="30"
+                            min="1"
+                            required
+                        >
+                    </div>
 
-        <input
-            type="text"
-            id="nombre"
-            placeholder="Nombre del curso"
-            required
-        >
+                    <div class="form-group">
+                        <label for="fechaInicio">Fecha de Inicio</label>
+                        <input
+                            type="date"
+                            id="fechaInicio"
+                            required
+                        >
+                    </div>
+                </div>
 
-        <input
-            type="text"
-            id="descripcion"
-            placeholder="Descripción"
-            required
-        >
+                <div class="form-actions">
+                    <button type="submit" id="crearCurso" class="btn btn-primary">
+                        Crear Curso
+                    </button>
+                    <button type="button" id="cancelarEdicion" class="btn btn-outline" hidden>
+                        Cancelar Edición
+                    </button>
+                </div>
+            </form>
+        </section>
 
-        <input
-            type="number"
-            id="cupos"
-            placeholder="Cantidad de cupos"
-            required
-        >
-
-        <input
-            type="date"
-            id="fechaInicio"
-            required
-        >
-
-        <button type="submit" id="crearCurso">
-            Crear Curso
-        </button>
-
-    </form>
-
-    <hr>
-
-    <h2>Cursos Registrados</h2>
-
-    <div id="cursosContainer">
-        <!-- Aquí se mostrarán los cursos -->
-    </div>
+        <section class="cursos-section">
+            <h2>Cursos Registrados</h2>
+            <div id="cursosContainer" class="cursos-grid">
+                <!-- Aquí se mostrarán los cursos -->
+            </div>
+        </section>
+    </main>
 
     <script src="js/cursos.js"></script>
-
 </body>
 </html>
