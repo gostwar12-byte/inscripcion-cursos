@@ -196,3 +196,8 @@ inscripcion-cursos/
 Proyecto en etapa inicial de desarrollo.
 
 Actualmente se encuentra configurada la estructura base del repositorio, la gestión de variables de entorno y la preparación para la integración con base de datos mediante Sequelize.
+
+
+
+
+hola esta es una prueba
