@@ -2,7 +2,7 @@ const loginForm = document.getElementById('loginForm');
 const mensaje = document.getElementById('mensaje');
 
 // REEMPLAZA ESTA URL POR LA DE TU BACKEND EN RAILWAY
-const API_URL = 'https://inscripcion-cursos-production-bd3c.up.railway.app?version=nueva';
+const API_URL = 'https://inscripcion-cursos-production-bd3c.up.railway.app';
 
 loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
