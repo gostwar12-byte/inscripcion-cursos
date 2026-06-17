@@ -1,3 +1,6 @@
+// 🟢 CONFIGURACIÓN: URL de tu servidor en Railway
+const API_URL = 'https://inscripcion-cursos-production-bd3c.up.railway.app';
+
 const token = localStorage.getItem('token');
 
 if (!token) {
@@ -11,8 +14,6 @@ const notificacionContainer = document.getElementById('notificacionContainer');
 const cursoIdInput = document.getElementById('cursoId');
 const crearCursoBtn = document.getElementById('crearCurso');
 const cancelarEdicionBtn = document.getElementById('cancelarEdicion');
-
-// 🟢 CAPTURAMOS EL INTERRUPTOR DE FILTRADO DEL HTML (rq-07)
 const filtroDisponibles = document.getElementById('filtroDisponibles');
 
 let cursoEditandoId = null;
@@ -35,40 +36,35 @@ logoutBtn.addEventListener('click', () => {
     window.location.href = 'login.html';
 });
 
-// 🟢 ESCUCHAR CUANDO EL USUARIO ACTIVA/DESACTIVA EL FILTRO (rq-07)
 if (filtroDisponibles) {
     filtroDisponibles.addEventListener('change', () => {
-        cargarCursos(); // Volvemos a pedir los datos aplicando el estado actual del checkbox
+        cargarCursos();
     });
 }
 
 async function cargarCursos() {
     try {
-        // 🟢 SOLUCIÓN rq-07: Evaluamos de forma dinámica si el interruptor está marcado para armar la URL
         const soloDisponibles = filtroDisponibles ? filtroDisponibles.checked : false;
+        // 🟢 URL corregida con API_URL
         const urlCursos = soloDisponibles 
-            ? 'http://localhost:3000/api/cursos?disponibles=true' 
-            : 'http://localhost:3000/api/cursos';
+            ? `${API_URL}/api/cursos?disponibles=true` 
+            : `${API_URL}/api/cursos`;
 
-        // 1. Traer cursos usando la URL dinámica filtrada o completa
         const response = await fetch(urlCursos, {
             headers: { Authorization: `Bearer ${token}` }
         });
         const cursosRaw = await response.json();
         
-        // Extrae el array de cursos si viene envuelto en .data o .data.cursos
         const cursos = cursosRaw.data?.cursos || cursosRaw.data || cursosRaw;
 
-        // 2. Traer inscripciones del usuario para marcar cursos inscritos
-        const insResp = await fetch('http://localhost:3000/api/inscripciones/mis-inscripciones', {
+        // 🟢 URL corregida con API_URL
+        const insResp = await fetch(`${API_URL}/api/inscripciones/mis-inscripciones`, {
             headers: { Authorization: `Bearer ${token}` }
         });
         const insRaw = insResp.ok ? await insResp.json() : { data: [] };
         
-        // Extrae el array de inscripciones de manera segura
         const misInscripciones = insRaw.data?.inscripciones || insRaw.data || insRaw;
 
-        // Creamos el mapa para verificar estados de inscripción
         const mapInscripciones = new Map();
         if (Array.isArray(misInscripciones)) {
             misInscripciones.forEach(i => mapInscripciones.set(i.cursoId, i.id));
@@ -76,46 +72,33 @@ async function cargarCursos() {
 
         cursosContainer.innerHTML = '';
 
-        // Validamos que 'cursos' sea realmente un arreglo antes de recorrerlo
         if (!Array.isArray(cursos)) {
-            cursosContainer.innerHTML = '<p class="text-muted">No se encontraron cursos o el formato es incorrecto.</p>';
+            cursosContainer.innerHTML = '<p class="text-muted">No se encontraron cursos.</p>';
             return;
         }
 
         cursos.forEach(curso => {
             const inscritoId = mapInscripciones.get(curso.id);
-
             cursosContainer.innerHTML += `
                 <div class="curso-card">
                     <h3>${curso.nombre}</h3>
                     <p>${curso.descripcion}</p>
-                    
                     <div class="curso-meta">
                         <span>📅 ${new Date(curso.fechaInicio).toLocaleDateString('es-ES')}</span>
                         <span>👥 ${curso.cupos} cupos</span>
                     </div>
-
-                    <div class="curso-actions" style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
-                        <button class="btn btn-small btn-primary" onclick="editarCurso(${curso.id})">
-                            ✏️ Editar
-                        </button>
-                        <button class="btn btn-small btn-danger" onclick="eliminarCurso(${curso.id})">
-                            🗑️ Eliminar
-                        </button>
+                    <div class="curso-actions">
+                        <button class="btn btn-small btn-primary" onclick="editarCurso(${curso.id})">✏️ Editar</button>
+                        <button class="btn btn-small btn-danger" onclick="eliminarCurso(${curso.id})">🗑️ Eliminar</button>
                         ${inscritoId ? `
-                            <button class="btn btn-small btn-outline" style="padding: 0.25rem 0.6rem; white-space: nowrap;" onclick="cancelarInscripcion(${inscritoId})">
-                                ❌ Cancelar Inscripción
-                            </button>
+                            <button class="btn btn-small btn-outline" onclick="cancelarInscripcion(${inscritoId})">❌ Cancelar</button>
                         ` : `
-                            <button class="btn btn-small btn-success" onclick="inscribirse(${curso.id})">
-                                Inscribirse
-                            </button>
+                            <button class="btn btn-small btn-success" onclick="inscribirse(${curso.id})">Inscribirse</button>
                         `}
                     </div>
                 </div>
             `;
         });
-
     } catch (error) {
         console.error(error);
         cursosContainer.innerHTML = '<p>Error al cargar cursos</p>';
@@ -124,127 +107,75 @@ async function cargarCursos() {
 
 cursoForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-
-    const nombre = document.getElementById('nombre').value;
-    const descripcion = document.getElementById('descripcion').value;
-    const cupos = document.getElementById('cupos').value;
-    const fechaInicio = document.getElementById('fechaInicio').value;
     const esEdicion = Boolean(cursoEditandoId);
-    const url = esEdicion
-        ? `http://localhost:3000/api/cursos/${cursoEditandoId}`
-        : 'http://localhost:3000/api/cursos';
+    // 🟢 URL dinámica corregida
+    const url = esEdicion ? `${API_URL}/api/cursos/${cursoEditandoId}` : `${API_URL}/api/cursos`;
 
     try {
-        const response = await fetch(
-            url,
-            {
-                method: esEdicion ? 'PUT' : 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    nombre,
-                    descripcion,
-                    cupos,
-                    fechaInicio
-                })
-            }
-        );
+        const response = await fetch(url, {
+            method: esEdicion ? 'PUT' : 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            body: JSON.stringify({
+                nombre: document.getElementById('nombre').value,
+                descripcion: document.getElementById('descripcion').value,
+                cupos: document.getElementById('cupos').value,
+                fechaInicio: document.getElementById('fechaInicio').value
+            })
+        });
 
         const dataRaw = await response.json();
-        
-        // 🟢 BUSQUEDA FLEXIBLE DEL MENSAJE (Evita caer en textos por defecto erróneos)
-        const msg = dataRaw.message || dataRaw.mensaje || dataRaw.data?.message || dataRaw.data?.mensaje;
+        const msg = dataRaw.message || dataRaw.mensaje;
 
         if (response.ok) {
-            mostrarNotificacion(msg || 'Operación realizada con éxito', 'success');
+            mostrarNotificacion(msg || 'Éxito', 'success');
             cursoForm.reset();
             cancelarEdicion();
             cargarCursos();
         } else {
-            mostrarNotificacion(msg || 'Error al crear/actualizar curso', 'error');
+            mostrarNotificacion(msg || 'Error', 'error');
         }
-
     } catch (error) {
-        console.error(error);
-        mostrarNotificacion('Error al crear/actualizar curso', 'error');
+        mostrarNotificacion('Error en el servidor', 'error');
     }
 });
 
 async function eliminarCurso(id) {
-    const confirmar = confirm('¿Estás seguro de eliminar este curso?');
-
-    if (!confirmar) {
-        return;
-    }
-
+    if (!confirm('¿Eliminar?')) return;
     try {
-        const response = await fetch(
-            `http://localhost:3000/api/cursos/${id}`,
-            {
-                method: 'DELETE',
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            }
-        );
-
-        const dataRaw = await response.json();
-        const msg = dataRaw.message || dataRaw.mensaje || dataRaw.data?.message || dataRaw.data?.mensaje;
-
+        // 🟢 URL corregida
+        const response = await fetch(`${API_URL}/api/cursos/${id}`, {
+            method: 'DELETE',
+            headers: { Authorization: `Bearer ${token}` }
+        });
         if (response.ok) {
-            mostrarNotificacion(msg || 'Curso eliminado correctamente', 'success');
+            mostrarNotificacion('Curso eliminado', 'success');
             cargarCursos();
-        } else {
-            mostrarNotificacion(msg || 'Error al eliminar curso', 'error');
         }
-
     } catch (error) {
-        console.error(error);
-        mostrarNotificacion('Error al eliminar curso', 'error');
+        mostrarNotificacion('Error al eliminar', 'error');
     }
 }
 
 async function editarCurso(id) {
     try {
-        const response = await fetch(
-            `http://localhost:3000/api/cursos/${id}`,
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            }
-        );
+        // 🟢 URL corregida
+        const response = await fetch(`${API_URL}/api/cursos/${id}`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await response.json();
+        const curso = data.data?.curso || data.data || data;
 
-        const cursoRaw = await response.json();
-        const msg = cursoRaw.message || cursoRaw.mensaje || cursoRaw.data?.message || cursoRaw.data?.mensaje;
-
-        if (!response.ok) {
-            mostrarNotificacion(msg || 'No se pudo cargar el curso', 'error');
-            return;
-        }
-
-        const curso = cursoRaw.data?.curso || cursoRaw.data || cursoRaw;
-
-        cursoEditandoId = curso.id || id;
-        cursoIdInput.value = curso.id || id;
-        document.getElementById('nombre').value = curso.nombre || '';
-        document.getElementById('descripcion').value = curso.descripcion || '';
-        document.getElementById('cupos').value = curso.cupos ?? 0;
-        
-        document.getElementById('fechaInicio').value = curso.fechaInicio
-            ? String(curso.fechaInicio).split('T')[0]
-            : '';
+        cursoEditandoId = curso.id;
+        cursoIdInput.value = curso.id;
+        document.getElementById('nombre').value = curso.nombre;
+        document.getElementById('descripcion').value = curso.descripcion;
+        document.getElementById('cupos').value = curso.cupos;
+        document.getElementById('fechaInicio').value = String(curso.fechaInicio).split('T')[0];
 
         crearCursoBtn.textContent = 'Actualizar Curso';
         cancelarEdicionBtn.hidden = false;
-
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-
     } catch (error) {
-        console.error(error);
-        mostrarNotificacion('Error al cargar curso para edición', 'error');
+        mostrarNotificacion('Error al cargar edición', 'error');
     }
 }
 
@@ -258,62 +189,42 @@ function cancelarEdicion() {
 
 cancelarEdicionBtn.addEventListener('click', cancelarEdicion);
 
-window.eliminarCurso = eliminarCurso;
-window.editarCurso = editarCurso;
-
 async function inscribirse(cursoId) {
     try {
-        const response = await fetch('http://localhost:3000/api/inscripciones', {
+        // 🟢 URL corregida
+        const response = await fetch(`${API_URL}/api/inscripciones`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`
-            },
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
             body: JSON.stringify({ cursoId })
         });
-
-        const dataRaw = await response.json();
-        
-        // 🟢 CORRECCIÓN CLAVE: Extraemos el mensaje real (.message) enviado desde el backend en el error 400
-        const msg = dataRaw.message || dataRaw.mensaje || dataRaw.data?.message || dataRaw.data?.mensaje;
-
         if (response.ok) {
-            mostrarNotificacion(msg || 'Inscripción realizada con éxito', 'success');
+            mostrarNotificacion('Inscripción exitosa', 'success');
             cargarCursos();
-        } else {
-            // Si el backend da error (ej: solapamiento), inyectará el texto descriptivo real con la cruz roja
-            mostrarNotificacion(msg || 'Error al procesar la inscripción', 'error');
         }
     } catch (error) {
-        console.error(error);
         mostrarNotificacion('Error al inscribirse', 'error');
     }
 }
 
 async function cancelarInscripcion(inscripcionId) {
     try {
-        const response = await fetch(`http://localhost:3000/api/inscripciones/${inscripcionId}`, {
+        // 🟢 URL corregida
+        const response = await fetch(`${API_URL}/api/inscripciones/${inscripcionId}`, {
             method: 'DELETE',
             headers: { Authorization: `Bearer ${token}` }
         });
-
-        const dataRaw = await response.json();
-        const msg = dataRaw.message || dataRaw.mensaje || dataRaw.data?.message || dataRaw.data?.mensaje;
-
         if (response.ok) {
-            mostrarNotificacion(msg || 'Inscripción cancelada', 'success');
+            mostrarNotificacion('Inscripción cancelada', 'success');
             cargarCursos();
-        } else {
-            mostrarNotificacion(msg || 'Error al cancelar inscripción', 'error');
         }
     } catch (error) {
-        console.error(error);
-        mostrarNotificacion('Error al cancelar inscripción', 'error');
+        mostrarNotificacion('Error al cancelar', 'error');
     }
 }
 
+window.eliminarCurso = eliminarCurso;
+window.editarCurso = editarCurso;
 window.inscribirse = inscribirse;
 window.cancelarInscripcion = cancelarInscripcion;
 
-// Cargar listado inicial
 cargarCursos();

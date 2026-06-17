@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // URL base de tu API (Cámbiala por tu URL de Railway si estás probando en producción)
-    const API_URL = 'http://localhost:3000/api/auth';
+    // 🟢 CORRECCIÓN: URL de tu servidor en Railway
+    const API_URL = 'https://inscripcion-cursos-production-bd3c.up.railway.app/api/auth';
 
     // Elementos de la interfaz
     const stepSolicitar = document.getElementById('step-solicitar');
@@ -22,7 +22,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const correo = document.getElementById('email').value;
 
         try {
-            // Nota de pauta: Endpoint para solicitar el token
             const response = await fetch(`${API_URL}/request-reset`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -33,7 +32,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (response.ok) {
                 showAlert('Código de recuperación enviado. Revisa tu consola/correo.', 'success');
-                // Ocultamos el paso 1 y mostramos el paso 2
                 stepSolicitar.classList.add('d-none');
                 stepRestablecer.classList.remove('d-none');
             } else {
@@ -52,7 +50,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const password = document.getElementById('nueva-password').value;
 
         try {
-            // Nota de pauta: Endpoint para aplicar el cambio sin enviar texto plano
             const response = await fetch(`${API_URL}/reset-password`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -63,7 +60,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (response.ok) {
                 showAlert('¡Contraseña actualizada con éxito! Redirigiendo al login...', 'success');
-                // Esperamos 2 segundos para que lea el mensaje y redirigimos
                 setTimeout(() => {
                     window.location.href = 'login.html';
                 }, 2500);

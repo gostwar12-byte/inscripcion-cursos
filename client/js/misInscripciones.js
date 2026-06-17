@@ -1,3 +1,6 @@
+// 🟢 CONFIGURACIÓN: URL de tu servidor en Railway
+const API_URL = 'https://inscripcion-cursos-production-bd3c.up.railway.app';
+
 const token = localStorage.getItem('token');
 
 if (!token) {
@@ -28,7 +31,8 @@ logoutBtn.addEventListener('click', () => {
 
 async function cargarMisInscripciones() {
     try {
-        const response = await fetch('http://localhost:3000/api/inscripciones/mis-inscripciones', {
+        // 🟢 URL corregida con API_URL
+        const response = await fetch(`${API_URL}/api/inscripciones/mis-inscripciones`, {
             headers: { Authorization: `Bearer ${token}` }
         });
 
@@ -37,9 +41,6 @@ async function cargarMisInscripciones() {
         }
 
         const dataRaw = await response.json();
-
-        console.log("Estructura exacta recibida de la BD:", dataRaw);
-
         const inscripciones = dataRaw.data?.inscripciones || dataRaw.inscripciones || dataRaw.data || dataRaw;
 
         container.innerHTML = '';
@@ -51,10 +52,8 @@ async function cargarMisInscripciones() {
 
         inscripciones.forEach(item => {
             const curso = item.Curso || item.curso || item;
-
             if (!curso) return; 
 
-            // Dejamos listo el nombre limpio escapando comillas para evitar errores en el HTML
             const nombreCursoLimpio = (curso.nombre || 'Curso sin nombre').replace(/"/g, '&quot;');
 
             container.innerHTML += `
@@ -67,7 +66,6 @@ async function cargarMisInscripciones() {
                     </div>
                     <div class="curso-actions" style="margin-top: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
                         <button class="btn btn-small btn-danger" onclick="cancelarInscripcion(${item.id})">Cancelar inscripción</button>
-                        
                         <button class="btn btn-small btn-primary" 
                                 data-nombre="${nombreCursoLimpio}" 
                                 onclick="emitirCertificado(this)" 
@@ -78,19 +76,16 @@ async function cargarMisInscripciones() {
                 </div>
             `;
         });
-
     } catch (error) {
         console.error(error);
         container.innerHTML = '<p class="text-muted">Error al cargar inscripciones</p>';
     }
 }
 
-// 🟢 FUNCIÓN rq-10: Ventana emergente con el diploma oficial imprimible
 window.emitirCertificado = function(boton) {
     try {
         const nombreCurso = boton.getAttribute('data-nombre');
         const fechaHoy = new Date().toLocaleDateString('es-ES');
-
         const ventanaCertificado = window.open('', '_blank', 'width=800,height=600');
         
         ventanaCertificado.document.write(`
@@ -98,39 +93,19 @@ window.emitirCertificado = function(boton) {
             <html lang="es">
             <head>
                 <meta charset="UTF-8">
-                <title>Certificado de Inscripción - ${nombreCurso}</title>
+                <title>Certificado - ${nombreCurso}</title>
                 <style>
-                    body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f5f5f5; padding: 30px; text-align: center; color: #333; }
-                    .certificado-border { border: 8px double #2c3e50; padding: 40px; background-color: white; max-width: 700px; margin: 0 auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-                    .header h1 { font-size: 2.3rem; color: #2c3e50; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px; }
-                    .header p { font-size: 1.1rem; color: #7f8c8d; margin-top: 0; margin-bottom: 40px; font-style: italic; }
-                    .presentacion { font-size: 1.2rem; margin-bottom: 10px; }
-                    .nombre-alumno { font-size: 2.2rem; font-weight: bold; color: #d35400; margin: 20px 0; border-bottom: 2px solid #eee; display: inline-block; padding-bottom: 5px; }
-                    .detalle { font-size: 1.1rem; line-height: 1.6; max-width: 550px; margin: 0 auto 40px auto; }
-                    .fecha-emision { font-size: 0.95rem; color: #95a5a6; margin-bottom: 50px; }
-                    .firmas { display: flex; justify-content: space-around; margin-top: 40px; }
-                    .firma-bloque { border-top: 1px solid #bdc3c7; width: 200px; padding-top: 8px; font-size: 0.9rem; color: #7f8c8d; }
-                    .btn-imprimir { background-color: #27ae60; color: white; border: none; padding: 10px 25px; font-size: 1rem; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 30px; }
-                    @media print { .btn-imprimir { display: none; } body { background: white; padding: 0; } .certificado-border { box-shadow: none; margin: 0; } }
+                    body { font-family: sans-serif; padding: 30px; text-align: center; }
+                    .certificado-border { border: 8px double #2c3e50; padding: 40px; }
+                    .btn-imprimir { background-color: #27ae60; color: white; border: none; padding: 10px 25px; cursor: pointer; margin-top: 20px; }
+                    @media print { .btn-imprimir { display: none; } }
                 </style>
             </head>
             <body>
                 <div class="certificado-border">
-                    <div class="header">
-                        <h1>Certificado Oficial</h1>
-                        <p>Sistema de Gestión e Inscripción de Cursos</p>
-                    </div>
-                    <p class="presentacion">Se otorga el presente comprobante a:</p>
-                    <div class="nombre-alumno">Elias Gonzalez</div>
-                    <p class="detalle">
-                        Por haber completado exitosamente el proceso de postulación e incorporación formal en el curso de especialización técnica denominado: <br>
-                        <strong>"${nombreCurso}"</strong>.
-                    </p>
-                    <p class="fecha-emision">Documento emitido de forma electrónica el ${fechaHoy}</p>
-                    <div class="firmas">
-                        <div class="firma-bloque">Dirección Académica</div>
-                        <div class="firma-bloque">Sello de Registro Oficial</div>
-                    </div>
+                    <h1>Certificado Oficial</h1>
+                    <p>Curso: <strong>${nombreCurso}</strong></p>
+                    <p>Emitido el ${fechaHoy}</p>
                     <button class="btn-imprimir" onclick="window.print()">🖨️ Guardar o Imprimir PDF</button>
                 </div>
             </body>
@@ -138,36 +113,34 @@ window.emitirCertificado = function(boton) {
         `);
         ventanaCertificado.document.close();
     } catch (e) {
-        console.error("Error generando certificado:", e);
+        console.error(e);
     }
 };
 
 async function cancelarInscripcion(inscripcionId) {
-    const confirmar = confirm('¿Estás seguro de que deseas cancelar esta inscripción?');
-    if (!confirmar) return;
+    if (!confirm('¿Seguro que deseas cancelar?')) return;
 
     try {
-        const response = await fetch(`http://localhost:3000/api/inscripciones/${inscripcionId}`, {
+        // 🟢 URL corregida con API_URL
+        const response = await fetch(`${API_URL}/api/inscripciones/${inscripcionId}`, {
             method: 'DELETE',
             headers: { Authorization: `Bearer ${token}` }
         });
 
         const dataRaw = await response.json();
-        const msg = dataRaw.mensaje || dataRaw.data?.mensaje || 'Inscripción cancelada correctamente';
+        const msg = dataRaw.mensaje || dataRaw.data?.mensaje || 'Inscripción cancelada';
 
         if (response.ok) {
             mostrarNotificacion(msg, 'success');
             cargarMisInscripciones();
         } else {
-            mostrarNotificacion(msg || 'Error al cancelar inscripción', 'error');
+            mostrarNotificacion(msg, 'error');
         }
     } catch (error) {
         console.error(error);
-        mostrarNotificacion('Error al cancelar inscripción', 'error');
+        mostrarNotificacion('Error al cancelar', 'error');
     }
 }
 
 window.cancelarInscripcion = cancelarInscripcion;
-
-// Ejecutar carga inicial
 cargarMisInscripciones();
