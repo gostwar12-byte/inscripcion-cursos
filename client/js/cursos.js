@@ -37,32 +37,23 @@ logoutBtn.addEventListener('click', () => {
 });
 
 if (filtroDisponibles) {
-    filtroDisponibles.addEventListener('change', () => {
-        cargarCursos();
-    });
+    filtroDisponibles.addEventListener('change', () => cargarCursos());
 }
 
 async function cargarCursos() {
     try {
         const soloDisponibles = filtroDisponibles ? filtroDisponibles.checked : false;
-        // 🟢 URL corregida con API_URL
-        const urlCursos = soloDisponibles 
-            ? `${API_URL}/api/cursos?disponibles=true` 
-            : `${API_URL}/api/cursos`;
+        const urlCursos = soloDisponibles ? `${API_URL}/api/cursos?disponibles=true` : `${API_URL}/api/cursos`;
 
-        const response = await fetch(urlCursos, {
-            headers: { Authorization: `Bearer ${token}` }
-        });
-        const cursosRaw = await response.json();
+        const [resCursos, resInscripciones] = await Promise.all([
+            fetch(urlCursos, { headers: { Authorization: `Bearer ${token}` } }),
+            fetch(`${API_URL}/api/inscripciones/mis-inscripciones`, { headers: { Authorization: `Bearer ${token}` } })
+        ]);
+
+        const cursosRaw = await resCursos.json();
+        const insRaw = resInscripciones.ok ? await resInscripciones.json() : { data: [] };
         
         const cursos = cursosRaw.data?.cursos || cursosRaw.data || cursosRaw;
-
-        // 🟢 URL corregida con API_URL
-        const insResp = await fetch(`${API_URL}/api/inscripciones/mis-inscripciones`, {
-            headers: { Authorization: `Bearer ${token}` }
-        });
-        const insRaw = insResp.ok ? await insResp.json() : { data: [] };
-        
         const misInscripciones = insRaw.data?.inscripciones || insRaw.data || insRaw;
 
         const mapInscripciones = new Map();
@@ -71,7 +62,6 @@ async function cargarCursos() {
         }
 
         cursosContainer.innerHTML = '';
-
         if (!Array.isArray(cursos)) {
             cursosContainer.innerHTML = '<p class="text-muted">No se encontraron cursos.</p>';
             return;
@@ -105,10 +95,49 @@ async function cargarCursos() {
     }
 }
 
+async function inscribirse(cursoId) {
+    try {
+        const response = await fetch(`${API_URL}/api/inscripciones`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            body: JSON.stringify({ cursoId })
+        });
+        const data = await response.json();
+        
+        if (response.ok) {
+            mostrarNotificacion(data.message || 'Inscripción exitosa', 'success');
+            cargarCursos();
+        } else {
+            mostrarNotificacion(data.message || data.mensaje || 'Error al inscribirse', 'error');
+        }
+    } catch (error) {
+        mostrarNotificacion('Error de conexión', 'error');
+    }
+}
+
+async function cancelarInscripcion(inscripcionId) {
+    try {
+        const response = await fetch(`${API_URL}/api/inscripciones/${inscripcionId}`, {
+            method: 'DELETE',
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await response.json();
+
+        if (response.ok) {
+            mostrarNotificacion(data.message || 'Inscripción cancelada', 'success');
+            cargarCursos();
+        } else {
+            mostrarNotificacion(data.message || data.mensaje || 'Error al cancelar', 'error');
+        }
+    } catch (error) {
+        mostrarNotificacion('Error de conexión', 'error');
+    }
+}
+
+// Funciones de formulario
 cursoForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const esEdicion = Boolean(cursoEditandoId);
-    // 🟢 URL dinámica corregida
     const url = esEdicion ? `${API_URL}/api/cursos/${cursoEditandoId}` : `${API_URL}/api/cursos`;
 
     try {
@@ -123,16 +152,13 @@ cursoForm.addEventListener('submit', async (e) => {
             })
         });
 
-        const dataRaw = await response.json();
-        const msg = dataRaw.message || dataRaw.mensaje;
-
+        const data = await response.json();
         if (response.ok) {
-            mostrarNotificacion(msg || 'Éxito', 'success');
-            cursoForm.reset();
+            mostrarNotificacion(data.message || 'Operación exitosa', 'success');
             cancelarEdicion();
             cargarCursos();
         } else {
-            mostrarNotificacion(msg || 'Error', 'error');
+            mostrarNotificacion(data.message || data.mensaje || 'Error', 'error');
         }
     } catch (error) {
         mostrarNotificacion('Error en el servidor', 'error');
@@ -140,9 +166,8 @@ cursoForm.addEventListener('submit', async (e) => {
 });
 
 async function eliminarCurso(id) {
-    if (!confirm('¿Eliminar?')) return;
+    if (!confirm('¿Eliminar curso?')) return;
     try {
-        // 🟢 URL corregida
         const response = await fetch(`${API_URL}/api/cursos/${id}`, {
             method: 'DELETE',
             headers: { Authorization: `Bearer ${token}` }
@@ -158,10 +183,7 @@ async function eliminarCurso(id) {
 
 async function editarCurso(id) {
     try {
-        // 🟢 URL corregida
-        const response = await fetch(`${API_URL}/api/cursos/${id}`, {
-            headers: { Authorization: `Bearer ${token}` }
-        });
+        const response = await fetch(`${API_URL}/api/cursos/${id}`, { headers: { Authorization: `Bearer ${token}` } });
         const data = await response.json();
         const curso = data.data?.curso || data.data || data;
 
@@ -175,52 +197,18 @@ async function editarCurso(id) {
         crearCursoBtn.textContent = 'Actualizar Curso';
         cancelarEdicionBtn.hidden = false;
     } catch (error) {
-        mostrarNotificacion('Error al cargar edición', 'error');
+        mostrarNotificacion('Error al cargar datos', 'error');
     }
 }
 
 function cancelarEdicion() {
     cursoEditandoId = null;
-    cursoIdInput.value = '';
     cursoForm.reset();
     crearCursoBtn.textContent = 'Crear Curso';
     cancelarEdicionBtn.hidden = true;
 }
 
 cancelarEdicionBtn.addEventListener('click', cancelarEdicion);
-
-async function inscribirse(cursoId) {
-    try {
-        // 🟢 URL corregida
-        const response = await fetch(`${API_URL}/api/inscripciones`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-            body: JSON.stringify({ cursoId })
-        });
-        if (response.ok) {
-            mostrarNotificacion('Inscripción exitosa', 'success');
-            cargarCursos();
-        }
-    } catch (error) {
-        mostrarNotificacion('Error al inscribirse', 'error');
-    }
-}
-
-async function cancelarInscripcion(inscripcionId) {
-    try {
-        // 🟢 URL corregida
-        const response = await fetch(`${API_URL}/api/inscripciones/${inscripcionId}`, {
-            method: 'DELETE',
-            headers: { Authorization: `Bearer ${token}` }
-        });
-        if (response.ok) {
-            mostrarNotificacion('Inscripción cancelada', 'success');
-            cargarCursos();
-        }
-    } catch (error) {
-        mostrarNotificacion('Error al cancelar', 'error');
-    }
-}
 
 window.eliminarCurso = eliminarCurso;
 window.editarCurso = editarCurso;
