@@ -1,198 +1,115 @@
 # Sistema de Inscripción a Cursos
 
 ## Descripción
+Aplicación web desarrollada para gestionar cursos e inscripciones de estudiantes. El sistema permite registrar cursos, consultar la oferta disponible e inscribir usuarios en distintos cursos de forma persistente.
 
-Aplicación web desarrollada para gestionar cursos e inscripciones de estudiantes.
-
-El sistema permitirá registrar cursos, consultar la oferta disponible e inscribir usuarios en distintos cursos.
+**Autor:** Elias Gonzalez
 
 ---
 
 ## Stack Tecnológico
 
 ### Frontend
-
-* HTML
-* CSS
-* JavaScript
+* HTML5, CSS3, JavaScript (Vanilla JS).
 
 ### Backend
-
-* Node.js
-* Express.js
+* Node.js, Express.js.
 
 ### Base de Datos
-
-* MySQL
-* Sequelize ORM
+* MySQL Server, Sequelize ORM.
 
 ### Control de versiones
-
-* Git
-* GitHub
+* Git, GitHub.
 
 ---
 
-## Requisitos
-
-* Node.js v22 o superior
-* npm
-* MySQL Server
-
-Verificar instalación:
-
-```bash
-node -v
-npm -v
-```
+## Requisitos Previos
+* Node.js v22.x o superior.
+* npm (Node Package Manager).
+* Servidor MySQL Server activo.
 
 ---
 
 ## Instalación
 
-### Clonar repositorio
+1. **Clonar repositorio:**
+   ```bash
+   git clone [https://github.com/gostwar12-byte/inscripcion-cursos.git](https://github.com/gostwar12-byte/inscripcion-cursos.git)
+   cd inscripcion-cursos
 
-```bash
-git clone https://github.com/gostwar12-byte/inscripcion-cursos.git
-```
 
-### Entrar al proyecto
+## instalar dependencias
+Bash
+# Backend
+cd server && npm install
+# Frontend
+cd ../client && npm install
 
-```bash
-cd inscripcion-cursos
-```
-
-### Instalar dependencias del backend
-
-```bash
-cd server
-npm install
-```
-
-### Instalar dependencias del frontend
-
-```bash
-cd ../client
-npm install
-```
-
----
-
-## Variables de entorno
-
-El proyecto utiliza variables de entorno para separar la configuración del código fuente.
-
-Se debe crear un archivo `.env` dentro de la carpeta `server` utilizando como referencia el archivo `.env.example`.
-
-### Variables requeridas
-
-```env
 # Puerto donde corre la API
 PORT=3000
 
-# Entorno de ejecución
+# Entorno de ejecución (development o production)
 NODE_ENV=development
 
-# Configuración individual de base de datos
+# Configuración de base de datos
 DB_HOST=localhost
 DB_PORT=3306
 DB_NAME=inscripcion_cursos
 DB_USER=root
 DB_PASSWORD=password
 
-# URL completa de conexión a la base de datos
-DATABASE_URL=mysql://usuario:password@localhost:3306/inscripcion_cursos
+# URL completa de conexión a la base de datos (Usada por Sequelize/Railway)
+DATABASE_URL=mysql://root:password@localhost:3306/inscripcion_cursos
 
-# Clave utilizada para autenticación JWT
-JWT_SECRET=tu_clave_secreta
+# Clave secreta para la generación de tokens JWT
+JWT_SECRET=tu_clave_secreta_super_segura
 
-# Dominio permitido para solicitudes CORS
+# Dominio permitido para solicitudes CORS (Front-end local o producción)
 CORS_ORIGIN=http://localhost:5173
 
-# URL de la API utilizada por el frontend
+# URL de la API consumida por el frontend
 VITE_API_URL=http://localhost:3000/api
-```
 
-### Desarrollo local
 
-Crear el archivo `.env` dentro de la carpeta `server` y configurar las variables necesarias para el entorno de desarrollo.
+## Configuración en Producción:
 
-### Producción (Railway)
+Backend (Railway): Configurar en el panel de variables del servicio.
 
-Las variables de entorno del backend deben configurarse desde el panel **Variables** de Railway.
+Frontend (Vercel/Netlify): Configurar VITE_API_URL en las variables de entorno del dashboard.
 
-Variables requeridas:
+Nota: Nunca subir archivos .env al repositorio.
 
-* DATABASE_URL
-* JWT_SECRET
-* PORT
-* NODE_ENV
-* CORS_ORIGIN
+## Ejecución Local y Migraciones (GEN-03)
+Aplicar migraciones de BD:
 
-### Producción (Vercel o Netlify)
-
-Las variables del frontend deben configurarse desde el panel **Environment Variables**.
-
-Variable requerida:
-
-* VITE_API_URL
-
-### Importante
-
-No se deben subir archivos `.env` al repositorio.
-
-Todas las variables de producción deben configurarse desde los paneles de administración de cada plataforma.
-
----
-
-## Ejecución local
-
-### Levantar API
-
-```bash
+Bash
 cd server
-npm start
-```
+npx sequelize-cli db:migrate
 
-### Levantar Frontend
+Iniciar Backend: npm start (en carpeta /server)
 
-```bash
-cd client
-npm start
-```
+Iniciar Frontend: npm start (en carpeta /client)
 
----
+## Documentación de Rutas (GEN-06)
+Públicas: /api/auth/register, /api/auth/login, /api/auth/recuperar-password.
+
+Protegidas: Todas las rutas bajo /api/cursos e /api/inscripciones requieren el header Authorization: Bearer <token>.
+
+## Postman (GEN-11)
+La colección de pruebas se encuentra en la carpeta /Postman. Importa el archivo .json en Postman para probar el flujo completo de autenticación y CRUD.
+
+## Historial de Evolución (GEN-12)
+Migración Inicial: Creación de modelos Usuario, Curso, Inscripcion.
+
+Migración v2 (Recuperación): Se agregaron campos resetToken y resetTokenExpires a la tabla Usuarios (Tipo de cambio: AC - Agregar Campo). Justificación: Implementar flujo de recuperación de contraseña sin alterar registros existentes.
 
 ## Estructura del Proyecto
-
-```text
+Plaintext
 inscripcion-cursos/
-│
-├── client/
-│   ├── public/
-│   └── src/
-│
-├── docs/
-│
-├── server/
-│   ├── config/
-│   ├── migrations/
-│   ├── models/
-│   ├── routes/
-│   ├── src/
-│   ├── .env
-│   ├── package.json
-│   └── package-lock.json
-│
-├── .env.example
-├── .gitignore
+├── client/           # Código fuente Frontend
+├── Postman/          # Colección de pruebas API
+├── server/           # Backend Express + Sequelize
+│   ├── migrations/   # Historial de cambios a la BD
+│   └── ...
 └── README.md
-```
 
----
-
-## Estado del Proyecto
-
-Proyecto en etapa inicial de desarrollo.
-
-Actualmente se encuentra configurada la estructura base del repositorio, la gestión de variables de entorno y la preparación para la integración con base de datos mediante Sequelize.
