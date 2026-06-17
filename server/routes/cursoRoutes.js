@@ -1,13 +1,28 @@
 const express = require('express');
 const router = express.Router();
 
+// 🟢 Importamos Op para poder hacer la comparación de "mayor que" (> 0)
 const { Curso } = require('../models');
+const { Op } = require('sequelize'); 
 const authenticate = require('../middleware/authMiddleware');
 
-// Obtener todos los cursos
+// Obtener todos los cursos (soporta filtro opcional de disponibles)
 router.get('/', authenticate, async (req, res, next) => {
     try {
-        const cursos = await Curso.findAll();
+        const { disponibles } = req.query;
+        let donde = {};
+
+        // 🟢 Si el frontend envía ?disponibles=true, filtramos donde cupos > 0
+        if (disponibles === 'true') {
+            donde.cupos = {
+                [Op.gt]: 0
+            };
+        }
+
+        const cursos = await Curso.findAll({
+            where: donde
+        });
+
         res.json({
             success: true,
             code: 'CURSOS_LIST_SUCCESS',
@@ -132,6 +147,5 @@ router.delete('/:id', authenticate, async (req, res, next) => {
         next(error);
     }
 });
-
 
 module.exports = router;

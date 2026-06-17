@@ -85,6 +85,31 @@ router.post('/', authenticate, async (req, res, next) => {
             return next(err);
         }
 
+        // 🟢 VALIDACIÓN rq-06: Control de solapamiento de fechas/horarios
+        const misInscripcionesActuales = await Inscripcion.findAll({
+            where: { usuarioId: req.usuario.id },
+            include: [{ model: Curso }],
+            transaction: t,
+            lock: t.LOCK.UPDATE
+        });
+
+        const nuevaFechaInicioStr = new Date(curso.fechaInicio).toISOString().split('T')[0];
+
+        // 🔄 CORREGIDO: Se cambia el 'de' por el operador 'of' de JavaScript
+        for (const inscripcion of misInscripcionesActuales) {
+            if (inscripcion.Curso && inscripcion.Curso.fechaInicio) {
+                const fechaInscritaStr = new Date(inscripcion.Curso.fechaInicio).toISOString().split('T')[0];
+                
+                if (nuevaFechaInicioStr === fechaInscritaStr) {
+                    await t.rollback();
+                    const err = new Error(`Solapamiento de horarios: Ya tienes un curso agendado para iniciar el día ${new Date(curso.fechaInicio).toLocaleDateString('es-ES')}`);
+                    err.statusCode = 400;
+                    err.code = 'HORARIO_SOLAPADO';
+                    return next(err);
+                }
+            }
+        }
+
         // Verificar cupos disponibles
         if (curso.cupos <= 0) {
             await t.rollback();
