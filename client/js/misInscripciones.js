@@ -36,28 +36,38 @@ async function cargarMisInscripciones() {
             throw new Error('No se pudieron cargar las inscripciones');
         }
 
-        const inscripciones = await response.json();
+        const dataRaw = await response.json();
+
+        // 🕵️‍♂️ LOG TEMPORAL: Esto nos dejará ver la verdad en F12 si sigue fallando
+        console.log("Estructura exacta recibida de la BD:", dataRaw);
+
+        // 🟢 NUEVA EXTRACCIÓN ULTRA-FLEXIBLE:
+        const inscripciones = dataRaw.data?.inscripciones || dataRaw.inscripciones || dataRaw.data || dataRaw;
 
         container.innerHTML = '';
 
-        if (inscripciones.length === 0) {
+        // Validamos que 'inscripciones' sea realmente una lista antes de continuar
+        if (!Array.isArray(inscripciones) || inscripciones.length === 0) {
             container.innerHTML = '<p class="text-muted">No tienes inscripciones todavía.</p>';
             return;
         }
 
         inscripciones.forEach(item => {
-            const curso = item.Curso;
+            // Buscamos el objeto Curso por si viene plano o anidado en Sequelize
+            const curso = item.Curso || item.curso || item;
+
+            if (!curso) return; // Salvaguarda por si hay una inscripción huérfana
 
             container.innerHTML += `
                 <div class="curso-card">
-                    <h3>${curso.nombre}</h3>
-                    <p>${curso.descripcion}</p>
+                    <h3>${curso.nombre || 'Curso sin nombre'}</h3>
+                    <p>${curso.descripcion || 'Sin descripción disponible'}</p>
                     <div class="curso-meta">
-                        <span>📅 ${new Date(curso.fechaInicio).toLocaleDateString('es-ES')}</span>
-                        <span>👥 ${curso.cupos} cupos</span>
+                        <span>📅 ${curso.fechaInicio ? new Date(curso.fechaInicio).toLocaleDateString('es-ES') : 'Sin fecha'}</span>
+                        <span>👥 ${curso.cupos ?? 0} cupos</span>
                     </div>
                     <div class="curso-actions">
-                        <button class="btn btn-small btn-outline" onclick="cancelarInscripcion(${item.id})">Cancelar inscripción</button>
+                        <button class="btn btn-small btn-danger" onclick="cancelarInscripcion(${item.id})">Cancelar inscripción</button>
                     </div>
                 </div>
             `;
@@ -70,19 +80,25 @@ async function cargarMisInscripciones() {
 }
 
 async function cancelarInscripcion(inscripcionId) {
+    const confirmar = confirm('¿Estás seguro de que deseas cancelar esta inscripción?');
+    if (!confirmar) return;
+
     try {
         const response = await fetch(`http://localhost:3000/api/inscripciones/${inscripcionId}`, {
             method: 'DELETE',
             headers: { Authorization: `Bearer ${token}` }
         });
 
-        const data = await response.json();
+        const dataRaw = await response.json();
+        
+        // 🟢 SOLUCIÓN: Buscar el mensaje de éxito de forma flexible
+        const msg = dataRaw.mensaje || dataRaw.data?.mensaje || 'Inscripción cancelada correctamente';
 
         if (response.ok) {
-            mostrarNotificacion(data.mensaje, 'success');
+            mostrarNotificacion(msg, 'success');
             cargarMisInscripciones();
         } else {
-            mostrarNotificacion(data.mensaje || 'Error al cancelar inscripción', 'error');
+            mostrarNotificacion(msg || 'Error al cancelar inscripción', 'error');
         }
     } catch (error) {
         console.error(error);
@@ -92,4 +108,5 @@ async function cancelarInscripcion(inscripcionId) {
 
 window.cancelarInscripcion = cancelarInscripcion;
 
+// Ejecutar carga inicial
 cargarMisInscripciones();

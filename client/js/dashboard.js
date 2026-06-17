@@ -27,7 +27,7 @@ logoutBtn.addEventListener('click', () => {
 
 async function cargarDatos() {
     try {
-        // Traer información del usuario
+        // 1. Traer información del usuario
         const usuarioResponse = await fetch(
             'http://localhost:3000/api/dashboard/usuario',
             {
@@ -38,12 +38,17 @@ async function cargarDatos() {
         );
 
         if (usuarioResponse.ok) {
-            const usuario = await usuarioResponse.json();
-            document.getElementById('nombreUsuario').textContent = usuario.nombre;
-            document.getElementById('emailUsuario').textContent = usuario.correo;
+            const usuarioRaw = await usuarioResponse.json();
+            
+            // 🟢 SOLUCIÓN 1: Desempaquetamos buscando si viene en .data.usuario, en .data o directo
+            const usuario = usuarioRaw.data?.usuario || usuarioRaw.data || usuarioRaw;
+            
+            // Forzamos la compatibilidad con Mayúsculas/Minúsculas de la Base de Datos
+            document.getElementById('nombreUsuario').textContent = usuario.nombre || usuario.Nombre || '';
+            document.getElementById('emailUsuario').textContent = usuario.correo || usuario.Correo || usuario.email || usuario.Email || '';
         }
 
-        // Traer estadísticas
+        // 2. Traer estadísticas
         const estadisticasResponse = await fetch(
             'http://localhost:3000/api/dashboard/estadisticas',
             {
@@ -57,16 +62,19 @@ async function cargarDatos() {
             throw new Error('No se pudieron cargar las estadísticas');
         }
 
-        const estadisticas = await estadisticasResponse.json();
+        const estadisticasRaw = await estadisticasResponse.json();
+        
+        // Desempaquetamos el objeto interno 'data' del backend
+        const estadisticas = estadisticasRaw.data || estadisticasRaw;
 
-        // Actualizar cards de estadísticas
-        document.getElementById('totalCursos').textContent = estadisticas.totalCursos;
-        document.getElementById('totalUsuarios').textContent = estadisticas.totalUsuarios;
-        document.getElementById('totalInscripciones').textContent = estadisticas.totalInscripciones;
-        document.getElementById('misInscripciones').textContent = estadisticas.misInscripciones;
+        // Actualizar cards de estadísticas de forma segura
+        document.getElementById('totalCursos').textContent = estadisticas.totalCursos ?? 0;
+        document.getElementById('totalUsuarios').textContent = estadisticas.totalUsuarios ?? 0;
+        document.getElementById('totalInscripciones').textContent = estadisticas.totalInscripciones ?? 0;
+        document.getElementById('misInscripciones').textContent = estadisticas.misInscripciones ?? 0;
 
-        // Cargar cursos populares
-        cargarCursosPopulares(estadisticas.cursosPopulares);
+        // Cargar cursos populares pasando un array vacío por defecto si no existiera
+        cargarCursosPopulares(estadisticas.cursosPopulares || []);
 
     } catch (error) {
         console.error(error);
@@ -78,14 +86,23 @@ function cargarCursosPopulares(cursosPopulares) {
     const container = document.getElementById('cursosPopularesContainer');
     container.innerHTML = '';
 
-    if (cursosPopulares.length === 0) {
+    if (!cursosPopulares || cursosPopulares.length === 0) {
         container.innerHTML = '<p class="text-muted">No hay cursos disponibles aún</p>';
         return;
     }
 
     cursosPopulares.forEach((item, index) => {
-        const curso = item.Curso;
-        const inscripciones = item.dataValues.total;
+        // Desempaquetamos el curso buscando en todas las capas posibles que genera Sequelize
+        //linea detective 
+        console.log(`=== CURSO POPULAR ${index + 1} ===`, item);
+
+        const curso = item.Curso || item.curso || item.dataValues?.Curso || item;
+        
+        // Obtenemos el total de inscritos de forma segura
+        const inscripciones = item.dataValues?.total ?? item.total ?? 0;
+        
+        // 🟢 SOLUCIÓN: Buscamos los cupos en minúscula o mayúscula en el objeto curso o en la raíz
+        const cuposTotales = curso.cupos ?? curso.Cupos ?? item.cupos ?? item.Cupos ?? 0;
         
         container.innerHTML += `
             <div class="popular-item">
@@ -93,8 +110,8 @@ function cargarCursosPopulares(cursosPopulares) {
                     <span class="rank-badge">${index + 1}</span>
                 </div>
                 <div class="popular-info">
-                    <h4>${curso.nombre}</h4>
-                    <p>${curso.descripcion.substring(0, 100)}...</p>
+                    <h4>${curso.nombre || curso.Nombre || 'Curso sin nombre'}</h4>
+                    <p>${curso.descripcion || curso.Descripcion ? (curso.descripcion || curso.Descripcion).substring(0, 100) : ''}...</p>
                 </div>
                 <div class="popular-stats">
                     <div class="stat">
@@ -102,7 +119,7 @@ function cargarCursosPopulares(cursosPopulares) {
                         <span class="stat-label">Inscritos</span>
                     </div>
                     <div class="stat">
-                        <span class="stat-num">${curso.cupos}</span>
+                        <span class="stat-num">${cuposTotales}</span>
                         <span class="stat-label">Cupos</span>
                     </div>
                 </div>
