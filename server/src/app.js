@@ -14,7 +14,7 @@ const app = express();
 // 🟢 SOLUCIÓN CORS ROBUSTA
 // El middleware cors() gestiona automáticamente las peticiones preflight (OPTIONS)
 const corsOptions = {
-    origin: 'https://inscripcion-cursos-c1g0nq8f4-elias25.vercel.app', 
+    origin: 'https://inscripcion-cursos-prdqe6b06-elias25.vercel.app', 
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true
