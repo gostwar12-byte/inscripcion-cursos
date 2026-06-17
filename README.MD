@@ -34,7 +34,7 @@ Aplicación web desarrollada para gestionar cursos e inscripciones de estudiante
 
 1. **Clonar repositorio:**
    ```bash
-   git clone [https://github.com/gostwar12-byte/inscripcion-cursos.git](https://github.com/gostwar12-byte/inscripcion-cursos.git)
+   git clone https://github.com/gostwar12-byte/inscripcion-cursos.git
    cd inscripcion-cursos
 
 

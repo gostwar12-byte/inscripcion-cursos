@@ -1,6 +1,9 @@
 const registerForm = document.getElementById('registerForm');
 const mensaje = document.getElementById('mensaje');
 
+// REEMPLAZA ESTA URL POR LA DE TU BACKEND EN RAILWAY
+const API_URL = 'https://TU-URL-DE-RAILWAY.up.railway.app';
+
 registerForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -12,7 +15,6 @@ registerForm.addEventListener('submit', async (e) => {
     // Validar que las contraseñas coincidan
     if (password !== passwordConfirm) {
         mensaje.className = 'message-box error';
-        // Ajustado para que el carácter unicode ruede bien
         mensaje.textContent = '✗ Las contraseñas no coinciden';
         return;
     }
@@ -26,7 +28,7 @@ registerForm.addEventListener('submit', async (e) => {
 
     try {
         const response = await fetch(
-            'http://localhost:3000/api/auth/register',
+            `${API_URL}/api/auth/register`, // <--- Usamos la variable aquí
             {
                 method: 'POST',
                 headers: {
@@ -44,7 +46,6 @@ registerForm.addEventListener('submit', async (e) => {
 
         if (!response.ok) {
             mensaje.className = 'message-box error';
-            // 🟢 Corrección aquí: Extrae el string real sin importar la estructura JSON exacta
             const textoError = data.message || data.error || data.mensaje || 'Error al procesar el registro';
             mensaje.textContent = '✗ ' + textoError;
             return;

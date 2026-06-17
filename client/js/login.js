@@ -1,6 +1,9 @@
 const loginForm = document.getElementById('loginForm');
 const mensaje = document.getElementById('mensaje');
 
+// REEMPLAZA ESTA URL POR LA DE TU BACKEND EN RAILWAY
+const API_URL = 'https://TU-URL-DE-RAILWAY.up.railway.app';
+
 loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -9,7 +12,7 @@ loginForm.addEventListener('submit', async (e) => {
 
     try {
         const response = await fetch(
-            'http://localhost:3000/api/auth/login',
+            `${API_URL}/api/auth/login`,
             {
                 method: 'POST',
                 headers: {
@@ -24,7 +27,6 @@ loginForm.addEventListener('submit', async (e) => {
 
         const data = await response.json();
 
-        // 🟢 SOLUCIÓN: Extraer el mensaje de forma flexible (raíz, .data o .data.mensaje)
         const textoMensaje = data.mensaje || data.data?.mensaje;
 
         if (!response.ok) {
@@ -36,7 +38,6 @@ loginForm.addEventListener('submit', async (e) => {
         const token = data.data?.token || data.token;
         localStorage.setItem('token', token);
 
-        // 🟢 SOLUCIÓN: Aplicamos el texto real capturado aquí también
         mensaje.className = 'message-box success';
         mensaje.textContent = '✓ ' + (textoMensaje || '¡Logeo exitoso!');
 
