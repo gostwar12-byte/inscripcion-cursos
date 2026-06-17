@@ -12,18 +12,15 @@ const dashboardRoutes = require('../routes/dashboardRoutes');
 const app = express();
 
 // 🟢 SOLUCIÓN CORS ROBUSTA
-// 1. Configuración principal de CORS
+// El middleware cors() gestiona automáticamente las peticiones preflight (OPTIONS)
 const corsOptions = {
-    origin: 'https://inscripcion-cursos-c1g0nq8f4-elias25.vercel.app', // Asegúrate que esta sea tu URL actual
+    origin: 'https://inscripcion-cursos-c1g0nq8f4-elias25.vercel.app', 
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true
 };
 
 app.use(cors(corsOptions));
-
-// 2. Manejo explícito de peticiones OPTIONS (Preflight)
-app.options('*', cors(corsOptions));
 
 app.use(express.json());
 
