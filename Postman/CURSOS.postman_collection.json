@@ -1,0 +1,272 @@
+{
+  "info": {
+    "_postman_id": "76804484-78ca-4aa5-af8e-cd6eac9ff070",
+    "name": "CURSOS",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "54798213",
+    "_collection_link": "https://go.postman.co/collection/54798213-76804484-78ca-4aa5-af8e-cd6eac9ff070?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Registro y Logeo",
+      "item": [
+        {
+          "name": "Registrar usuario",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"nombre\": \"Elias\",\r\n  \"correo\": \"elias@test.com\",\r\n  \"password\": \"123456\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/auth/register",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "3000",
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Logeo",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"correo\": \"elias@test.com\",\r\n    \"password\": \"123456\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/auth/login",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "3000",
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Crear Cursos",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiY29ycmVvIjoiZWxpYXNAdGVzdC5jb20iLCJpYXQiOjE3ODExMDI5MzIsImV4cCI6MTc4MTEwNjUzMn0.tNEJ7jPTemcSZzQK5RP9PHEnHHd7ExF8MHwkE2-hG4Q",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"nombre\": \"Programación Web\",\r\n  \"descripcion\": \"Curso de desarrollo web con Node.js\",\r\n  \"cupos\": 30,\r\n  \"fechaInicio\": \"2026-07-01\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/cursos",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "cursos"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Listar",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiY29ycmVvIjoiZWxpYXNAdGVzdC5jb20iLCJpYXQiOjE3ODExMDI5MzIsImV4cCI6MTc4MTEwNjUzMn0.tNEJ7jPTemcSZzQK5RP9PHEnHHd7ExF8MHwkE2-hG4Q",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/cursos/",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "cursos",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Listar por id",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiY29ycmVvIjoiZWxpYXNAdGVzdC5jb20iLCJpYXQiOjE3ODExMDI5MzIsImV4cCI6MTc4MTEwNjUzMn0.tNEJ7jPTemcSZzQK5RP9PHEnHHd7ExF8MHwkE2-hG4Q",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/cursos/5",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "cursos",
+            "5"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Actualizar por ID",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiY29ycmVvIjoiZWxpYXNAdGVzdC5jb20iLCJpYXQiOjE3ODEwODY3ODUsImV4cCI6MTc4MTA5MDM4NX0.FUwvZSsEJv8wAAVP7LvWWauFvMU74ciO8yXzsFHHue8",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"nombre\": \"Programación Web Avanzada\",\r\n  \"descripcion\": \"Node.js, Express y JWT\",\r\n  \"cupos\": 40,\r\n  \"fechaInicio\": \"2026-08-01\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/cursos/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "cursos",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Borrar Curso",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiY29ycmVvIjoiZWxpYXNAdGVzdC5jb20iLCJpYXQiOjE3ODEwODY3ODUsImV4cCI6MTc4MTA5MDM4NX0.FUwvZSsEJv8wAAVP7LvWWauFvMU74ciO8yXzsFHHue8",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/cursos/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "cursos",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

@@ -12,6 +12,9 @@ const cursoIdInput = document.getElementById('cursoId');
 const crearCursoBtn = document.getElementById('crearCurso');
 const cancelarEdicionBtn = document.getElementById('cancelarEdicion');
 
+// 🟢 CAPTURAMOS EL INTERRUPTOR DE FILTRADO DEL HTML (rq-07)
+const filtroDisponibles = document.getElementById('filtroDisponibles');
+
 let cursoEditandoId = null;
 
 function mostrarNotificacion(mensaje, tipo = 'success', duracion = 4000) {
@@ -32,10 +35,23 @@ logoutBtn.addEventListener('click', () => {
     window.location.href = 'login.html';
 });
 
+// 🟢 ESCUCHAR CUANDO EL USUARIO ACTIVA/DESACTIVA EL FILTRO (rq-07)
+if (filtroDisponibles) {
+    filtroDisponibles.addEventListener('change', () => {
+        cargarCursos(); // Volvemos a pedir los datos aplicando el estado actual del checkbox
+    });
+}
+
 async function cargarCursos() {
     try {
-        // 1. Traer cursos
-        const response = await fetch('http://localhost:3000/api/cursos', {
+        // 🟢 SOLUCIÓN rq-07: Evaluamos de forma dinámica si el interruptor está marcado para armar la URL
+        const soloDisponibles = filtroDisponibles ? filtroDisponibles.checked : false;
+        const urlCursos = soloDisponibles 
+            ? 'http://localhost:3000/api/cursos?disponibles=true' 
+            : 'http://localhost:3000/api/cursos';
+
+        // 1. Traer cursos usando la URL dinámica filtrada o completa
+        const response = await fetch(urlCursos, {
             headers: { Authorization: `Bearer ${token}` }
         });
         const cursosRaw = await response.json();
@@ -50,7 +66,7 @@ async function cargarCursos() {
         const insRaw = insResp.ok ? await insResp.json() : { data: [] };
         
         // Extrae el array de inscripciones de manera segura
-        const misInscripciones = insRaw.data || insRaw;
+        const misInscripciones = insRaw.data?.inscripciones || insRaw.data || insRaw;
 
         // Creamos el mapa para verificar estados de inscripción
         const mapInscripciones = new Map();
@@ -79,7 +95,7 @@ async function cargarCursos() {
                         <span>👥 ${curso.cupos} cupos</span>
                     </div>
 
-                    <div class="curso-actions">
+                    <div class="curso-actions" style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
                         <button class="btn btn-small btn-primary" onclick="editarCurso(${curso.id})">
                             ✏️ Editar
                         </button>
@@ -87,9 +103,13 @@ async function cargarCursos() {
                             🗑️ Eliminar
                         </button>
                         ${inscritoId ? `
-                            <button class="btn btn-small btn-outline" onclick="cancelarInscripcion(${inscritoId})">Cancelar inscripción</button>
+                            <button class="btn btn-small btn-outline" style="padding: 0.25rem 0.6rem; white-space: nowrap;" onclick="cancelarInscripcion(${inscritoId})">
+                                ❌ Cancelar Inscripción
+                            </button>
                         ` : `
-                            <button class="btn btn-small btn-success" onclick="inscribirse(${curso.id})">Inscribirse</button>
+                            <button class="btn btn-small btn-success" onclick="inscribirse(${curso.id})">
+                                Inscribirse
+                            </button>
                         `}
                     </div>
                 </div>
@@ -133,11 +153,12 @@ cursoForm.addEventListener('submit', async (e) => {
         );
 
         const dataRaw = await response.json();
-        // 🟢 SOLUCIÓN: Buscar el mensaje de éxito en la raíz o dentro de .data
-        const msg = dataRaw.mensaje || dataRaw.data?.mensaje || 'Operación realizada con éxito';
+        
+        // 🟢 BUSQUEDA FLEXIBLE DEL MENSAJE (Evita caer en textos por defecto erróneos)
+        const msg = dataRaw.message || dataRaw.mensaje || dataRaw.data?.message || dataRaw.data?.mensaje;
 
         if (response.ok) {
-            mostrarNotificacion(msg, 'success');
+            mostrarNotificacion(msg || 'Operación realizada con éxito', 'success');
             cursoForm.reset();
             cancelarEdicion();
             cargarCursos();
@@ -170,11 +191,10 @@ async function eliminarCurso(id) {
         );
 
         const dataRaw = await response.json();
-        // 🟢 SOLUCIÓN: Buscar mensaje en raíz o en .data
-        const msg = dataRaw.mensaje || dataRaw.data?.mensaje || 'Curso eliminado correctamente';
+        const msg = dataRaw.message || dataRaw.mensaje || dataRaw.data?.message || dataRaw.data?.mensaje;
 
         if (response.ok) {
-            mostrarNotificacion(msg, 'success');
+            mostrarNotificacion(msg || 'Curso eliminado correctamente', 'success');
             cargarCursos();
         } else {
             mostrarNotificacion(msg || 'Error al eliminar curso', 'error');
@@ -198,16 +218,15 @@ async function editarCurso(id) {
         );
 
         const cursoRaw = await response.json();
+        const msg = cursoRaw.message || cursoRaw.mensaje || cursoRaw.data?.message || cursoRaw.data?.mensaje;
 
         if (!response.ok) {
-            mostrarNotificacion(cursoRaw.mensaje || cursoRaw.data?.mensaje || 'No se pudo cargar el curso', 'error');
+            mostrarNotificacion(msg || 'No se pudo cargar el curso', 'error');
             return;
         }
 
-        // 🟢 SOLUCIÓN: Extraemos el curso validando si viene en raíz, en .data o en .data.curso
         const curso = cursoRaw.data?.curso || cursoRaw.data || cursoRaw;
 
-        // Rellenamos el formulario buscando propiedades alternativas por si acaso
         cursoEditandoId = curso.id || id;
         cursoIdInput.value = curso.id || id;
         document.getElementById('nombre').value = curso.nombre || '';
@@ -218,11 +237,9 @@ async function editarCurso(id) {
             ? String(curso.fechaInicio).split('T')[0]
             : '';
 
-        // Cambiamos el texto del botón principal para indicar edición
         crearCursoBtn.textContent = 'Actualizar Curso';
         cancelarEdicionBtn.hidden = false;
 
-        // Scroll suave hacia arriba
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
     } catch (error) {
@@ -256,14 +273,16 @@ async function inscribirse(cursoId) {
         });
 
         const dataRaw = await response.json();
-        // 🟢 SOLUCIÓN: Buscar mensaje en raíz o en .data
-        const msg = dataRaw.mensaje || dataRaw.data?.mensaje || 'Inscripción realizada con éxito';
+        
+        // 🟢 CORRECCIÓN CLAVE: Extraemos el mensaje real (.message) enviado desde el backend en el error 400
+        const msg = dataRaw.message || dataRaw.mensaje || dataRaw.data?.message || dataRaw.data?.mensaje;
 
         if (response.ok) {
-            mostrarNotificacion(msg, 'success');
+            mostrarNotificacion(msg || 'Inscripción realizada con éxito', 'success');
             cargarCursos();
         } else {
-            mostrarNotificacion(msg || 'Error al inscribirse', 'error');
+            // Si el backend da error (ej: solapamiento), inyectará el texto descriptivo real con la cruz roja
+            mostrarNotificacion(msg || 'Error al procesar la inscripción', 'error');
         }
     } catch (error) {
         console.error(error);
@@ -279,11 +298,10 @@ async function cancelarInscripcion(inscripcionId) {
         });
 
         const dataRaw = await response.json();
-        // 🟢 SOLUCIÓN: Buscar mensaje en raíz o en .data
-        const msg = dataRaw.mensaje || dataRaw.data?.mensaje || 'Inscripción cancelada';
+        const msg = dataRaw.message || dataRaw.mensaje || dataRaw.data?.message || dataRaw.data?.mensaje;
 
         if (response.ok) {
-            mostrarNotificacion(msg, 'success');
+            mostrarNotificacion(msg || 'Inscripción cancelada', 'success');
             cargarCursos();
         } else {
             mostrarNotificacion(msg || 'Error al cancelar inscripción', 'error');

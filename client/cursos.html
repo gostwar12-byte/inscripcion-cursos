@@ -84,11 +84,19 @@
             </form>
         </section>
 
-        <section class="cursos-section">
-            <h2>Cursos Registrados</h2>
-            <div id="cursosContainer" class="cursos-grid">
-                <!-- Aquí se mostrarán los cursos -->
+<section class="cursos-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                <h2>Cursos Registrados</h2>
+                <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.95rem; cursor: pointer;">
+                    <input type="checkbox" id="filtroDisponibles" style="width: 1.2rem; height: 1.2rem; cursor: pointer;">
+                    <label for="filtroDisponibles" style="user-select: none; cursor: pointer; font-weight: 500;">
+                        Mostrar solo cursos con cupos disponibles
+                    </label>
+                </div>
             </div>
+            
+            <div id="cursosContainer" class="cursos-grid">
+                </div>
         </section>
     </main>
 
