@@ -1,20 +1,28 @@
 require('dotenv').config();
-const cursoRoutes = require('../routes/cursoRoutes');
-const inscripcionRoutes = require('../routes/inscripcionRoutes');
-const dashboardRoutes = require('../routes/dashboardRoutes');
 const express = require('express');
 const cors = require('cors');
 const errorHandler = require('../middleware/errorHandler');
 
+// Rutas
 const authRoutes = require('../routes/authRoutes');
+const cursoRoutes = require('../routes/cursoRoutes');
+const inscripcionRoutes = require('../routes/inscripcionRoutes');
+const dashboardRoutes = require('../routes/dashboardRoutes');
 
 const app = express();
 
-app.use(cors());
+// 🟢 SOLUCIÓN CORS: Configurado específicamente para tu frontend en Vercel
+app.use(cors({
+    origin: 'https://inscripcion-cursos-1s3boewlw-elias25.vercel.app',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
+}));
+
 app.use(express.json());
 
-// 🟢 SOLUCIÓN: Hace que la carpeta 'client' sea pública a través de HTTP
-// Esto permite que entres a http://localhost:3000/login.html sin restricciones de seguridad
+// Nota: app.use(express.static('../client')) funciona en local, 
+// pero en Railway no es necesario ya que el frontend vive en Vercel.
 app.use(express.static('../client'));
 
 app.get('/', (req, res) => {
@@ -28,7 +36,7 @@ app.use('/api/cursos', cursoRoutes);
 app.use('/api/inscripciones', inscripcionRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 
-// 404 - Ruta no encontrada (Ojo: express.static debe ir antes que esto para que encuentre los HTML)
+// 404 - Ruta no encontrada
 app.use((req, res) => {
   res.status(404).json({
     success: false,
@@ -37,7 +45,7 @@ app.use((req, res) => {
   });
 });
 
-// Middleware de manejo de errores (debe ir al final)
+// Middleware de manejo de errores
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 3000;
