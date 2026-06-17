@@ -14,6 +14,15 @@ module.exports = (sequelize, DataTypes) => {
     password: {
       type: DataTypes.STRING,
       allowNull: false
+    },
+    // 🟢 CAMPOS AGREGADOS PARA CUMPLIR GEN-07
+    resetToken: {
+      type: DataTypes.STRING,
+      allowNull: true // Debe ser true porque inicialmente no tienen token
+    },
+    resetTokenExpires: {
+      type: DataTypes.DATE,
+      allowNull: true
     }
   }, {
     tableName: 'usuarios'
