@@ -11,26 +11,32 @@ const dashboardRoutes = require('../routes/dashboardRoutes');
 
 const app = express();
 
-// 🟢 SOLUCIÓN CORS: Configurado específicamente para tu frontend en Vercel
-app.use(cors({
-    origin: 'https://inscripcion-cursos-1s3boewlw-elias25.vercel.app',
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+// 🟢 SOLUCIÓN CORS ROBUSTA
+// 1. Configuración principal de CORS
+const corsOptions = {
+    origin: 'https://inscripcion-cursos-c1g0nq8f4-elias25.vercel.app', // Asegúrate que esta sea tu URL actual
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true
-}));
+};
+
+app.use(cors(corsOptions));
+
+// 2. Manejo explícito de peticiones OPTIONS (Preflight)
+app.options('*', cors(corsOptions));
 
 app.use(express.json());
 
-// Nota: app.use(express.static('../client')) funciona en local, 
-// pero en Railway no es necesario ya que el frontend vive en Vercel.
+// Servir archivos estáticos
 app.use(express.static('../client'));
 
 app.get('/', (req, res) => {
     res.json({
-        mensaje: 'API Sistema de Inscripción a Cursos'
+        mensaje: 'API Sistema de Inscripción a Cursos - Conectada correctamente'
     });
 });
 
+// Rutas de la API
 app.use('/api/auth', authRoutes);
 app.use('/api/cursos', cursoRoutes);
 app.use('/api/inscripciones', inscripcionRoutes);
