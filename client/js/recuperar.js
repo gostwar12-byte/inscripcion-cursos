@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // 🟢 CORRECCIÓN: URL de tu servidor en Railway
+    // 🟢 URL de tu servidor en Railway (apuntando a auth)
     const API_URL = 'https://inscripcion-cursos-production-bd3c.up.railway.app/api/auth';
 
     // Elementos de la interfaz
@@ -10,9 +10,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const alertContainer = document.getElementById('alert-container');
 
     // Función auxiliar para mostrar alertas en pantalla
-    const showAlert = (message, type = 'danger') => {
+    const showAlert = (message, type = 'danger', isHtml = false) => {
         alertContainer.className = `alert alert-${type} text-center`;
-        alertContainer.textContent = message;
+        if (isHtml) {
+            alertContainer.innerHTML = message;
+        } else {
+            alertContainer.textContent = message;
+        }
         alertContainer.classList.remove('d-none');
     };
 
@@ -31,7 +35,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
 
             if (response.ok) {
-                showAlert('Código de recuperación enviado. Revisa tu consola/correo.', 'success');
+                // 🟢 CORRECCIÓN: Construimos mensaje con el token recibido del servidor
+                let mensajeExito = data.message;
+                if (data.tokenParaDemo) {
+                    mensajeExito += `<br><br>
+                        <div style="background: #e8f5e9; padding: 10px; border: 2px dashed #2e7d32; border-radius: 5px;">
+                            <strong>TOKEN PARA EVALUACIÓN:</strong> 
+                            <span style="font-size: 1.5em; display: block;">${data.tokenParaDemo}</span>
+                        </div>
+                        <p><em>Copia este código para restablecer tu contraseña.</em></p>`;
+                }
+
+                showAlert(mensajeExito, 'success', true);
                 stepSolicitar.classList.add('d-none');
                 stepRestablecer.classList.remove('d-none');
             } else {

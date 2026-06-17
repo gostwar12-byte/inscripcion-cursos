@@ -136,7 +136,7 @@ router.post('/request-reset', async (req, res, next) => {
 
         const usuario = await Usuario.findOne({ where: { correo } });
         
-        // Criterio de seguridad: No revelar si el correo existe o no para evitar enumeración
+        // Si no existe, devolvemos mensaje genérico por seguridad
         if (!usuario) {
             return res.json({
                 success: true,
@@ -145,32 +145,24 @@ router.post('/request-reset', async (req, res, next) => {
             });
         }
 
-        // Generamos un token alfanumérico corto de 6 caracteres (ej: 4F3D2A)
         const token = crypto.randomBytes(3).toString('hex').toUpperCase();
         
-        // Guardamos el token y definimos que expire en 15 minutos
         usuario.resetToken = token;
         usuario.resetTokenExpires = Date.now() + 15 * 60 * 1000; 
         await usuario.save();
 
-        // 🚨 EVIDENCIA PARA EVALUACIÓN: Lo sacamos por consola para poder simularlo en local sin usar emails reales
-        console.log(`\n=========================================`);
-        console.log(`[GEN-07] RECUPERACIÓN DE CONTRASEÑA`);
-        console.log(`Correo: ${correo}`);
-        console.log(`TOKEN: ${token}`);
-        console.log(`=========================================\n`);
-
+        // 🟢 CORRECCIÓN: Enviamos el token en la respuesta para que el frontend lo muestre
         res.json({
             success: true,
             code: 'RESET_REQUESTED',
-            message: 'Si el correo existe en el sistema, se ha enviado el código.'
+            message: 'Si el correo existe en el sistema, se ha generado el código.',
+            tokenParaDemo: token // <--- Clave para el profesor
         });
 
     } catch (error) {
         next(error);
     }
 });
-
 // ==========================================
 // GEN-07: RESTABLECER CONTRASEÑA CON TOKEN
 // ==========================================
