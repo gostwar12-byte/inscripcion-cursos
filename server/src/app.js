@@ -13,6 +13,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// 🟢 SOLUCIÓN: Hace que la carpeta 'client' sea pública a través de HTTP
+// Esto permite que entres a http://localhost:3000/login.html sin restricciones de seguridad
+app.use(express.static('../client'));
+
 app.get('/', (req, res) => {
     res.json({
         mensaje: 'API Sistema de Inscripción a Cursos'
@@ -24,7 +28,7 @@ app.use('/api/cursos', cursoRoutes);
 app.use('/api/inscripciones', inscripcionRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 
-// 404 - Ruta no encontrada
+// 404 - Ruta no encontrada (Ojo: express.static debe ir antes que esto para que encuentre los HTML)
 app.use((req, res) => {
   res.status(404).json({
     success: false,

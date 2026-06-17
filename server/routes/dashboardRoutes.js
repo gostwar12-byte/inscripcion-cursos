@@ -22,10 +22,12 @@ router.get('/estadisticas', authenticate, async (req, res, next) => {
                 'cursoId',
                 [require('sequelize').fn('COUNT', require('sequelize').col('cursoId')), 'total']
             ],
-            group: ['cursoId'],
+            // 🟢 AGREGAMOS 'Curso.id' al group para que MySQL te deje pedir más atributos del curso sin romper la consulta
+            group: ['cursoId', 'Curso.id'], 
             order: [[require('sequelize').literal('total'), 'DESC']],
             limit: 5,
-            include: [{ model: Curso, attributes: ['id', 'nombre'] }],
+            // 🟢 SOLUCIÓN: Agregamos 'descripcion' y 'cupos' a los attributes
+            include: [{ model: Curso, attributes: ['id', 'nombre', 'descripcion', 'cupos'] }],
             raw: false
         });
 
