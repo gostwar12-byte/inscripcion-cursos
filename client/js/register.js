@@ -12,6 +12,7 @@ registerForm.addEventListener('submit', async (e) => {
     // Validar que las contraseñas coincidan
     if (password !== passwordConfirm) {
         mensaje.className = 'message-box error';
+        // Ajustado para que el carácter unicode ruede bien
         mensaje.textContent = '✗ Las contraseñas no coinciden';
         return;
     }
@@ -24,7 +25,6 @@ registerForm.addEventListener('submit', async (e) => {
     }
 
     try {
-
         const response = await fetch(
             'http://localhost:3000/api/auth/register',
             {
@@ -44,7 +44,9 @@ registerForm.addEventListener('submit', async (e) => {
 
         if (!response.ok) {
             mensaje.className = 'message-box error';
-            mensaje.textContent = '✗ ' + data.mensaje;
+            // 🟢 Corrección aquí: Extrae el string real sin importar la estructura JSON exacta
+            const textoError = data.message || data.error || data.mensaje || 'Error al procesar el registro';
+            mensaje.textContent = '✗ ' + textoError;
             return;
         }
 
@@ -57,7 +59,6 @@ registerForm.addEventListener('submit', async (e) => {
 
     } catch (error) {
         console.error(error);
-
         mensaje.className = 'message-box error';
         mensaje.textContent = '✗ Error al conectar con el servidor';
     }

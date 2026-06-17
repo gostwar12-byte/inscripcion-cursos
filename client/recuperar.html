@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recuperar Contraseña - Sistema de Cursos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css"> 
+    <style>
+        .card-recuperar {
+            max-width: 450px;
+            margin: 80px auto;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+    <div class="container">
+        <div class="card card-recuperar bg-white">
+            <h2 class="text-center mb-4 text-primary">Recuperar Contraseña</h2>
+            
+            <div id="alert-container" class="d-none alert" role="alert"></div>
+
+            <div id="step-solicitar">
+                <p class="text-muted text-center">Ingresa tu correo electrónico y te enviaremos un código para restablecer tu cuenta.</p>
+                <form id="form-solicitar">
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Correo Electrónico</label>
+                        <input type="email" class="form-control" id="email" required placeholder="ejemplo@test.com">
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 py-2">Enviar Código</button>
+                </form>
+            </div>
+
+            <div id="step-restablecer" class="d-none">
+                <p class="text-muted text-center">Ingresa el token que recibiste y tu nueva contraseña.</p>
+                <form id="form-restablecer">
+                    <div class="mb-3">
+                        <label for="token" class="form-label">Código/Token de Recuperación</label>
+                        <input type="text" class="form-control" id="token" required placeholder="Pega el token aquí">
+                    </div>
+                    <div class="mb-3">
+                        <label for="nueva-password" class="form-label">Nueva Contraseña</label>
+                        <input type="password" class="form-control" id="nueva-password" required placeholder="Mínimo 6 caracteres">
+                    </div>
+                    <button type="submit" class="btn btn-success w-100 py-2">Actualizar Contraseña</button>
+                </form>
+            </div>
+
+            <div class="text-center mt-4">
+                <a href="login.html" class="text-decoration-none">Volver al Login</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/recuperar.js"></script>
+</body>
+</html>
